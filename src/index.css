@@ -1,0 +1,19 @@
+@import 'tailwindcss';
+
+/* Class-based dark mode (Tailwind v4): `.dark` on <html> enables dark: utilities */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-slate-theme: #1f2937;
+  --color-accent: #0d9488;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-slate-50 text-slate-800 antialiased dark:bg-slate-900 dark:text-slate-100;
+}
