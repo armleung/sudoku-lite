@@ -90,8 +90,14 @@ interface GameContextType {
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
-export function GameProvider({children}: {children: ReactNode}) {
-  const [state, dispatch] = useReducer(gameReducer, INITIAL_GAME_STATE);
+export function GameProvider({
+  children,
+  initial = INITIAL_GAME_STATE,
+}: {
+  children: ReactNode;
+  initial?: GameState;
+}) {
+  const [state, dispatch] = useReducer(gameReducer, initial);
 
   const newGame = useCallback(
     (tier: Tier, puzzleIndex: number) => dispatch({type: "NEW_GAME", tier, puzzleIndex}),

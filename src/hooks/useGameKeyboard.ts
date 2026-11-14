@@ -3,13 +3,15 @@ import {useGameActions} from "./useGameActions";
 
 /**
  * Desktop keyboard support: 1-9 place/note, Backspace erase, arrows move,
- * n notes, h hint, Ctrl/Cmd+Z undo, Ctrl/Cmd+Shift+Z / Ctrl/Cmd+Y redo.
- * (Escape pause is added in step 4 with the timer work.)
+ * n notes, h hint, Escape pause/resume, Ctrl/Cmd+Z undo,
+ * Ctrl/Cmd+Shift+Z / Ctrl/Cmd+Y redo.
  */
 export function useGameKeyboard() {
   const actions = useGameActions();
   const ref = useRef(actions);
-  ref.current = actions;
+  useEffect(() => {
+    ref.current = actions;
+  });
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -58,6 +60,9 @@ export function useGameKeyboard() {
         case "h":
         case "H":
           a.hint();
+          break;
+        case "Escape":
+          a.togglePause();
           break;
         default:
           if (e.key >= "1" && e.key <= "9") {

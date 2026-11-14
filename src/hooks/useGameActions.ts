@@ -10,7 +10,7 @@ import type {Cell} from "../lib/engine/types";
 export function useGameActions() {
   const {state: board, canUndo, canRedo, setNumber, setNotes, clearNumber, hint, undo, redo} =
     useBoard();
-  const {state: game, selectCell, toggleNotes, bumpMistake} = useGame();
+  const {state: game, selectCell, toggleNotes, bumpMistake, pause, resume} = useGame();
 
   const activeCell: Cell | undefined = useMemo(() => {
     if (!game.activeCell) return undefined;
@@ -51,6 +51,10 @@ export function useGameActions() {
       selectCell({x, y});
     },
     toggleNotes,
+    togglePause: () => {
+      if (game.phase === "running") pause();
+      else if (game.phase === "paused") resume();
+    },
     undo,
     redo,
   };

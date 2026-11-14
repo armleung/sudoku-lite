@@ -1,24 +1,36 @@
 import {flatten} from "lodash-es";
 import {useMemo} from "react";
 import SudokuGame from "../lib/game/SudokuGame";
-import type {Cell} from "../lib/engine/types";
-import {squareIndex} from "../lib/engine/utility";
+import {simpleSudokuToCells, squareIndex} from "../lib/engine/utility";
 import {useBoard} from "../state/BoardContext";
 import {useGame} from "../state/GameContext";
+import {usePreferences} from "../state/PreferencesContext";
 import {CellView} from "./CellView";
+
+// Blank board shown while paused (anti-cheat, SPEC §6.8).
+const BLANK_CELLS = simpleSudokuToCells(
+  Array.from({length: 9}, () => Array(9).fill(0)),
+);
+const NO_CONFLICTS = new Set<number>();
 
 export function Board() {
   const {state: board} = useBoard();
   const {state: game, selectCell} = useGame();
-  const cells = board.current;
+  const {state: prefs} = usePreferences();
 
-  const active = game.activeCell
-    ? cells.find((c) => c.x === game.activeCell!.x && c.y === game.activeCell!.y)
-    : undefined;
+  const cells = game.phase === "paused" ? BLANK_CELLS : board.current;
+
+  const active =
+    game.phase === "paused"
+      ? undefined
+      : game.activeCell
+        ? cells.find((c) => c.x === game.activeCell!.x && c.y === game.activeCell!.y)
+        : undefined;
 
   // Conflict paths: all cells lying between duplicate numbers in a row or column.
   // Lifted computation from super-sudoku (MIT).
-  const conflictCells = useMemo(() => {
+  const conflictSet = useMemo(() => {
+    if (!prefs.showConflicts) return NO_CONFLICTS;
     const conflicting = SudokuGame.conflictingFields(cells);
     const uniquePaths = SudokuGame.uniquePaths(
       flatten(
@@ -28,9 +40,8 @@ export function Board() {
     const pathCells = flatten(
       uniquePaths.map((p) => SudokuGame.getPathBetweenCell(p.from, p.to)),
     );
-    const set = new Set(pathCells.map((p) => p.y * 9 + p.x));
-    return (c: Cell) => set.has(c.y * 9 + c.x);
-  }, [cells]);
+    return new Set(pathCells.map((p) => p.y * 9 + p.x));
+  }, [cells, prefs.showConflicts]);
 
   return (
     <div
@@ -57,8 +68,13 @@ export function Board() {
             active={cell === active}
             highlighted={highlighted}
             sameNumber={sameNumber}
-            conflicting={conflictCells(cell)}
-            wrong={!cell.initial && cell.number !== 0 && cell.number !== cell.solution}
+            conflicting={conflictSet.has(cell.y * 9 + cell.x)}
+            wrong={
+              prefs.showWrongEntries &&
+              !cell.initial &&
+              cell.number !== 0 &&
+              cell.number !== cell.solution
+            }
             onSelect={(c) => selectCell({x: c.x, y: c.y})}
           />
         );
