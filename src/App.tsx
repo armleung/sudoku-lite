@@ -1,5 +1,6 @@
 import {useEffect} from "react";
 import {Board} from "./components/Board";
+import {InstallHint} from "./components/InstallHint";
 import {Controls} from "./components/Controls";
 import {NumberPad} from "./components/NumberPad";
 import {OfflineIndicator} from "./components/OfflineIndicator";
@@ -220,6 +221,9 @@ function AppShell() {
   return (
     <>
       <OfflineIndicator />
+      <div className="mx-auto w-full max-w-md px-4 sm:max-w-lg">
+        <InstallHint />
+      </div>
       <SaveManager />
       {game.view === "playing" ? <GameScreen /> : <SelectScreen />}
     </>
